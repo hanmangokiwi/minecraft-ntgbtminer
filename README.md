@@ -1,4 +1,6 @@
-# ntgbtminer
+# minecraft-ntgbtminer
+
+This project is a fork of ntgbtminer to mine bitcoins in minecraft
 
 ntgbtminer is a no thrills
 [getblocktemplate](https://en.bitcoin.it/wiki/Getblocktemplate) Bitcoin miner.
