@@ -27,8 +27,8 @@ $ bitcoind -testnet -daemon
 * Run ntgbtminer
 
 ```
-$ RPC_USER=bitcoinrpc RPC_PASS=foobar RPC_URL="http://127.0.0.1:18332" \
-    python3 ntgbtminer.py "Hello from vsergeev!" "mr9zpiUkvGukpg1uZ99NdAxwJmuSYYmNA3"
+I changed a few things so you just have to edit stuff inside the python file and just launch it normally.
+Run the minecraft save, and open chat, then run the program. Choose your .minecraft directory, then go back to minecraft and press escape.
 ```
 
 ## License
