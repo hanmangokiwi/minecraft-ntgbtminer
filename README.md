@@ -1,6 +1,8 @@
 # minecraft-ntgbtminer
 
 This project is a fork of ntgbtminer to mine bitcoins in minecraft
+I don't have my own crypto wallet nor am I old enough for paypal but I do have a patreon. One time payments are fine lol
+https://www.patreon.com/cmdrredstone
 
 # ntgbtminer
 ntgbtminer is a no thrills
