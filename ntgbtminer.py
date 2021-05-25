@@ -6,7 +6,7 @@
 # It mines at a measly 550 KH/s on my computer, but
 # with a whole lot of spirit ;)
 #
-
+import keyboard
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -18,13 +18,14 @@ import random
 import time
 import os
 import sys
+from tkinter import Tk, filedialog
 
 # JSON-HTTP RPC Configuration
 # This will be particular to your local ~/.bitcoin/bitcoin.conf
 
 RPC_URL = os.environ.get("RPC_URL", "http://127.0.0.1:8332")
-RPC_USER = os.environ.get("RPC_USER", "bitcoinrpc")
-RPC_PASS = os.environ.get("RPC_PASS", "")
+RPC_USER = os.environ.get("RPC_USER", "USERNAME")
+RPC_PASS = os.environ.get("RPC_PASS", "PASSWORD")
 
 ################################################################################
 # Bitcoin Daemon JSON-HTTP RPC
@@ -409,6 +410,13 @@ def block_mine(block_template, coinbase_message, extranonce_start, address, time
         coinbase_tx['data'] = tx_make_coinbase(coinbase_script, address, block_template['coinbasevalue'], block_template['height'])
         coinbase_tx['hash'] = tx_compute_hash(coinbase_tx['data'])
 
+
+
+
+
+
+
+
         # Recompute the merkle root
         block_template['merkleroot'] = tx_compute_merkle_root([tx['hash'] for tx in block_template['transactions']])
 
@@ -419,32 +427,68 @@ def block_mine(block_template, coinbase_message, extranonce_start, address, time
 
         # Loop through the nonce
         nonce = 0 if not debugnonce_start else debugnonce_start
-        while nonce <= 0xffffffff:
-            # Update the block header with the new 32-bit nonce
-            block_header = block_header[0:76] + nonce.to_bytes(4, byteorder='little')
 
-            # Recompute the block hash
-            block_hash = block_compute_raw_hash(block_header)
 
-            # Check if it the block meets the target hash
-            if block_hash < target_hash:
-                block_template['nonce'] = nonce
-                block_template['hash'] = block_hash.hex()
-                return (block_template, hash_rate)
+        # code for minecraft connection
+        # I'm so sorry that my code is so sloppy I have no idea what is going on here
+        # this is to check that the logs from minecraft are up to date
+        minecraftcheck = random.randint(0,2147483600)
+        print("Sending block to Minecraft...")
+        completeName = os.path.join(open_file, "saves/Bitcoin/datapacks/bitcoin/data/bitcoin/functions","input.mcfunction")
+        file1 = open(completeName, "w")
+        file1.write("data modify storage bitcoin:memory inputmagic set value "+str(list(map(int,(list(''.join(format((byte), '08b') for byte in block_header[0:76]))))))+"\n"+
+        "scoreboard players set target bitcoin "+str((''.join(format((byte), '08b') for byte in target_hash)).find("1") - 1)+"\nscoreboard players set update bitcoin 1\nscoreboard players set minecraftcheck temp "+str(minecraftcheck))
+        # this writes to the minecraft function that loads on /reload
+        file1.close()
+        keyboard.press_and_release('t')
+        time.sleep(0.1)
+        keyboard.write("/reload")
+        time.sleep(0.1)
+        keyboard.press_and_release('enter')
+        completeName = os.path.join(open_file, "logs","latest.log")
+        file1 = open(completeName, "r")
+        while(True):
+            loglines = file1.readline()
+            if loglines.find('Bitcoin') >= 0:
+                print(loglines)
+                if loglines.find('[CHAT] <Bitcoin> Bitcoin mined!') >= 0:
+                    try:
+                        verification = int(loglines.split()[-1])
+                        if(verification==minecraftcheck):
 
-            # Measure hash rate and check timeout
-            if nonce > 0 and nonce % 1048576 == 0:
-                hash_rate = hash_rate + ((1048576 / (time.time() - time_stamp)) - hash_rate) / (hash_rate_count + 1)
-                hash_rate_count += 1
+                            nonce = int(loglines.split()[-3])
+                            print("BITCOIN SUCCESSFULLY MINED! NONCE: "+str(nonce))
+                            break
+                    except:
+                        pass
 
-                time_stamp = time.time()
 
-                # If our mine time expired, return none
-                if timeout and (time_stamp - time_start) > timeout:
-                    return (None, hash_rate)
+        #while nonce <= 0xffffffff:
+        # Update the block header with the new 32-bit nonce
+        block_header = block_header[0:76] + nonce.to_bytes(4, byteorder='little')
 
-            nonce += 1
+        # Recompute the block hash
+        block_hash = block_compute_raw_hash(block_header)
+
+        # Check if it the block meets the target hash
+        if block_hash < target_hash:
+            block_template['nonce'] = nonce
+            block_template['hash'] = block_hash.hex()
+            return (block_template, hash_rate)
+
+        # Measure hash rate and check timeout
+        if nonce > 0 and nonce % 1048576 == 0:
+            hash_rate = hash_rate + ((1048576 / (time.time() - time_stamp)) - hash_rate) / (hash_rate_count + 1)
+            hash_rate_count += 1
+
+            time_stamp = time.time()
+
+            # If our mine time expired, return none
+            if timeout and (time_stamp - time_start) > timeout:
+                return (None, hash_rate)
+
         extranonce += 1
+        file1.close()
 
     # If we ran out of extra nonces, return none
     return (None, hash_rate)
@@ -473,10 +517,20 @@ def standalone_miner(coinbase_message, address):
                 print("Submission Error: {}".format(response))
                 break
 
-
+open_file = None
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: {:s} <coinbase message> <block reward address>".format(sys.argv[0]))
+    #if len(sys.argv) < 3:
+    #    print("Usage: {:s} <coinbase message> <block reward address>".format(sys.argv[0]))
+    #    sys.exit(1)
+    test = ["","This is a test",'bc1qp0cyzryw44nh3nmhqfdmqv7zlwupwufdngfvx9']
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    open_file = filedialog.askdirectory()
+    if open_file[-26:]!='AppData/Roaming/.minecraft':
+        print("You probably chose the wrong directory. Choose /AppData/Roaming/.minecraft")
         sys.exit(1)
-
-    standalone_miner(sys.argv[1].encode().hex(), sys.argv[2])
+    print("Open chat then press escape to start.")
+    keyboard.wait('esc')
+    time.sleep(0.1)
+    standalone_miner(test[1].encode().hex(), test[2])
