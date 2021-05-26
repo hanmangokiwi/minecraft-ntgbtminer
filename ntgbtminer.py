@@ -6,6 +6,7 @@
 # It mines at a measly 550 KH/s on my computer, but
 # with a whole lot of spirit ;)
 #
+# On my minecraft it mines at a whopping 1.1H/s :)
 import keyboard
 import urllib.request
 import urllib.error
